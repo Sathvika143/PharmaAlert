@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Exports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">PharmaAlert</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/medicines">All Medicines</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add-medicine">Add Medicine</a></li>
+                <li class="nav-item"><a class="nav-link" href="/alerts">Alerts</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/reports">Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="mb-5">Reports & Exports</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📋 All Medicines Inventory</h5>
+                    <p class="card-text">Complete inventory of all medicines with batches and stock levels.</p>
+                    <a href="/export/all-medicines" class="btn btn-primary">Download CSV</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">⚠️ Near-Expiry Medicines</h5>
+                    <p class="card-text">Medicines expiring within the next 6 months (configurable).</p>
+                    <a href="/export/near-expiry" class="btn btn-warning">Download CSV</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">🔴 Already Expired</h5>
+                    <p class="card-text">Medicines that have already passed their expiry date.</p>
+                    <a href="/export/expired" class="btn btn-danger">Download CSV</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📉 Low Stock Alert</h5>
+                    <p class="card-text">Medicines below their low-stock threshold levels.</p>
+                    <a href="/export/low-stock" class="btn btn-info">Download CSV</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Usage Log (30 Days)</h5>
+                    <p class="card-text">Stock movements: received, issued, and adjusted in the last 30 days.</p>
+                    <a href="/export/usage-log" class="btn btn-success">Download CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h3>Report Information</h3>
+    <ul>
+        <li><strong>All Medicines Inventory:</strong> Shows all SKUs with their batch count and total stock.</li>
+        <li><strong>Near-Expiry Medicines:</strong> Medicines expiring within the next 6 months (configured via EXPIRY_LEAD_DAYS in .env).</li>
+        <li><strong>Already Expired:</strong> Medicines that have exceeded their expiry date.</li>
+        <li><strong>Low Stock Alert:</strong> Medicines with stock below their configured low-stock threshold.</li>
+        <li><strong>Usage Log:</strong> Transaction history of all stock movements (receipts, issues) for the past 30 days.</li>
+    </ul>
+
+    <h3 class="mt-4">Download Format</h3>
+    <p>All reports are exported as CSV (Comma-Separated Values) files that can be opened in Excel, Google Sheets, or any spreadsheet application.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

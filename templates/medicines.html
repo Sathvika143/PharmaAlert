@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Medicines</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">PharmaAlert</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/medicines">All Medicines</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add-medicine">Add Medicine</a></li>
+                <li class="nav-item"><a class="nav-link" href="/alerts">Alerts</a></li>
+                <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>All Medicines</h1>
+        <a href="/add-medicine" class="btn btn-success">+ Add Medicine</a>
+    </div>
+
+    {% if medicines %}
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Medicine Name</th>
+                <th>Category</th>
+                <th>Total Stock</th>
+                <th>Low Stock Threshold</th>
+                <th>Batches</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in medicines %}
+            <tr>
+                <td>{{ med.name }}</td>
+                <td>{{ med.category or '-' }}</td>
+                <td><strong>{{ med.total_stock }}</strong></td>
+                <td>{{ med.low_stock_threshold }}</td>
+                <td><span class="badge bg-info">{{ med.batch_count }}</span></td>
+                <td>
+                    <a href="/medicine/{{ med.id }}" class="btn btn-sm btn-info">View</a>
+                    <a href="/medicine/{{ med.id }}/edit" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="/medicine/{{ med.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-warning">No medicines found. <a href="/add-medicine">Add one now</a>.</div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

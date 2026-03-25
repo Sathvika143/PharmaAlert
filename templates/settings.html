@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Settings - PharmaAlert</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">PharmaAlert</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/medicines">All Medicines</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add-medicine">Add Medicine</a></li>
+                <li class="nav-item"><a class="nav-link" href="/alerts">Alerts</a></li>
+                <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/settings">Settings</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="settings-container">
+        <h1 class="mb-4">📧 Email Notification Settings</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="info-box">
+            <h5>📌 How to Get Gmail App Password:</h5>
+            <ol class="mb-0">
+                <li>Go to <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a></li>
+                <li>Sign in to your Google Account</li>
+                <li>Select "Mail" as the app and "Windows Computer" as the device</li>
+                <li>Click "Generate" and copy the 16-character password</li>
+                <li>Paste it in the "Email Password" field below</li>
+            </ol>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong> Never use your regular Gmail password. Always use an App Password for security.
+        </div>
+
+        <form method="POST" class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Configure Email Notifications</h5>
+                
+                <div class="mb-3">
+                    <label for="email_sender" class="form-label">Your Email Address (Sender)</label>
+                    <input type="email" class="form-control" id="email_sender" name="email_sender" 
+                           value="{{ settings.email_sender }}" 
+                           placeholder="youremail@gmail.com" required>
+                    <div class="form-text">This email will send the notifications</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email_password" class="form-label">Gmail App Password</label>
+                    <input type="password" class="form-control" id="email_password" name="email_password" 
+                           value="{{ settings.email_password }}" 
+                           placeholder="16-character app password" required>
+                    <div class="form-text">Get this from Google App Passwords (see instructions above)</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email_receiver" class="form-label">Notification Recipient Email</label>
+                    <input type="email" class="form-control" id="email_receiver" name="email_receiver" 
+                           value="{{ settings.email_receiver }}" 
+                           placeholder="recipient@gmail.com" required>
+                    <div class="form-text">Where to receive alert notifications</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="expiry_lead_days" class="form-label">Alert Days Before Expiry</label>
+                    <input type="number" class="form-control" id="expiry_lead_days" name="expiry_lead_days" 
+                           value="{{ settings.expiry_lead_days }}" 
+                           min="30" max="365" required>
+                    <div class="form-text">Get alerts for medicines expiring within this many days (default: 180 = 6 months)</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">💾 Save Settings</button>
+                    <button type="button" class="btn btn-success" onclick="sendTestEmail()">📧 Send Test Email</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="card shadow mt-4">
+            <div class="card-body">
+                <h5 class="card-title">ℹ️ About Notifications</h5>
+                <p>PharmaAlert will automatically check for expiring medicines and low stock every day at 9:00 AM and send email notifications if any issues are found.</p>
+                <p class="mb-0"><strong>What you'll be notified about:</strong></p>
+                <ul>
+                    <li>Medicines that have already expired</li>
+                    <li>Medicines expiring within 30 days (Critical)</li>
+                    <li>Medicines expiring within 31-90 days (Warning)</li>
+                    <li>Medicines expiring within 91+ days (Notice)</li>
+                    <li>Low stock medicines (below threshold)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">📱 SMS Notifications</h5>
+            </div>
+            <div class="card-body">
+                <p>Want to receive SMS alerts in addition to email? Configure SMS notifications via Twilio:</p>
+                <a href="/sms-settings" class="btn btn-info btn-lg">
+                    <i class="fas fa-cog"></i> Configure SMS Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function sendTestEmail() {
+    const button = event.target;
+    button.disabled = true;
+    button.innerHTML = '⏳ Sending...';
+    
+    fetch('/test-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+        } else {
+            alert('❌ ' + data.message);
+        }
+        button.disabled = false;
+        button.innerHTML = '📧 Send Test Email';
+    })
+    .catch(error => {
+        alert('❌ Error: ' + error.message);
+        button.disabled = false;
+        button.innerHTML = '📧 Send Test Email';
+    });
+}
+</script>
+</body>
+</html>

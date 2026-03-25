@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">PharmaAlert</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/medicines">All Medicines</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add-medicine">Add Medicine</a></li>
+                <li class="nav-item"><a class="nav-link" href="/alerts">Alerts</a></li>
+                <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ medicine.name }}</h1>
+        <a href="/medicines" class="btn btn-secondary">Back</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Category:</strong> {{ medicine.category or '-' }}</p>
+            <p><strong>Low Stock Threshold:</strong> {{ medicine.low_stock_threshold }} units</p>
+            <p><strong>Total Stock:</strong> <span class="badge bg-success">{{ total_stock }}</span></p>
+            <p><strong>Created:</strong> {{ medicine.created_at }}</p>
+            <p><strong>Updated:</strong> {{ medicine.updated_at }}</p>
+            <a href="/medicine/{{ medicine.id }}/edit" class="btn btn-warning">Edit</a>
+            <a href="/medicine/{{ medicine.id }}/delete" class="btn btn-danger" onclick="return confirm('Delete this medicine and all batches?')">Delete Medicine</a>
+        </div>
+    </div>
+
+    <h3>Batches</h3>
+    <div class="mb-3">
+        <a href="/medicine/{{ medicine.id }}/add-batch" class="btn btn-success">+ Add Batch</a>
+    </div>
+
+    {% if batches %}
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Batch Number</th>
+                <th>Expiry Date</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for batch in batches %}
+            <tr>
+                <td>{{ batch.batch_number }}</td>
+                <td>{{ batch.expiry_date }}</td>
+                <td>{{ batch.quantity }}</td>
+                <td>
+                    <a href="/batch/{{ batch.id }}/receive" class="btn btn-sm btn-success">Receive</a>
+                    <a href="/batch/{{ batch.id }}/issue" class="btn btn-sm btn-warning">Issue</a>
+                    <a href="/batch/{{ batch.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-warning">No batches. <a href="/medicine/{{ medicine.id }}/add-batch">Add one</a>.</div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .stat-card {
+            border-radius: 8px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 { font-size: 14px; margin-bottom: 10px; }
+        .stat-card .value { font-size: 32px; font-weight: bold; }
+        .bg-primary-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .bg-success-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .bg-warning-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .bg-danger-card { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">PharmaAlert</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/medicines">All Medicines</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add-medicine">Add Medicine</a></li>
+                <li class="nav-item"><a class="nav-link" href="/alerts">Alerts</a></li>
+                <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard</h1>
+        <div class="btn-group" role="group">
+            <button class="btn btn-danger" onclick="triggerManualCheck()">🔔 Trigger Check Now</button>
+            <a href="/sms-settings" class="btn btn-info">📱 SMS Settings</a>
+        </div>
+    </div>
+
+    <!-- Notification Status Alert -->
+    <div class="alert alert-info mb-4" id="notificationStatus" style="display: none;">
+        <i class="fas fa-info-circle"></i> <span id="notificationStatusText"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary-card">
+                <h3>Total SKUs</h3>
+                <div class="value">{{ stats.total_skus }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success-card">
+                <h3>Active Batches</h3>
+                <div class="value">{{ stats.total_batches }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning-card">
+                <h3>Near-Expiry Count</h3>
+                <div class="value">{{ stats.near_expiry_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-danger-card">
+                <h3>Low Stock Count</h3>
+                <div class="value">{{ stats.low_stock_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-6">
+            <h3>Near-Expiry Medicines (Next 6 Months)</h3>
+            {% if near_expiry %}
+            <table class="table table-sm table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Expiry Date</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in near_expiry[:5] %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.batch_number }}</td>
+                        <td>{{ item.expiry_date }}</td>
+                        <td>{{ item.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="/alerts" class="btn btn-sm btn-warning">View All</a>
+            {% else %}
+            <p class="text-success">✓ No medicines expiring soon!</p>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-6">
+            <h3>Low Stock Medicines</h3>
+            {% if low_stock %}
+            <table class="table table-sm table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Current</th>
+                        <th>Threshold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in low_stock[:5] %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.total_stock }}</td>
+                        <td>{{ item.low_stock_threshold }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="/alerts" class="btn btn-sm btn-info">View All</a>
+            {% else %}
+            <p class="text-success">✓ All medicines well-stocked!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Recent Stock Movements</h3>
+            {% if usage_log %}
+            <table class="table table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Quantity Change</th>
+                        <th>Reason</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in usage_log %}
+                    <tr>
+                        <td>{{ log.name }}</td>
+                        <td>
+                            {% if log.qty_change > 0 %}
+                            <span class="badge bg-success">+{{ log.qty_change }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ log.qty_change }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.reason }}</td>
+                        <td>{{ log.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No stock movements yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function triggerManualCheck() {
+    fetch('/manual-check', {method: 'POST'})
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('✓ Checks completed! Alerts sent if needed.');
+                location.reload();
+            } else {
+                alert('✗ Error: ' + data.error);
+            }
+        })
+        .catch(e => alert('Error: ' + e));
+}
+
+// Check SMS configuration status on page load
+window.addEventListener('DOMContentLoaded', function() {
+    fetch('/sms-settings')
+        .then(r => r.text())
+        .catch(() => {
+            // If endpoint returns error, SMS status check not needed
+        });
+});
+</script>
+</body>
+</html>
