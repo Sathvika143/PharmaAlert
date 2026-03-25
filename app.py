@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 import sqlite3
 import io
 import os
+import threading
 from datetime import datetime, timedelta
 from db_config import DB_PATH
 from schema import create_schema
@@ -23,6 +24,9 @@ from auth import init_users, create_user, get_user_by_id, verify_user_password, 
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key-change-this-in-production"
+
+_cron_lock = threading.Lock()
+_cron_running = False
 
 # Ensure core schema exists before auth/scheduler use the database
 create_schema(DB_PATH)
@@ -292,6 +296,7 @@ def manual_check():
 @app.route("/cron-check", methods=["GET", "POST"])
 def cron_check():
     """Trigger checks from an external scheduler using a shared secret."""
+    global _cron_running
     cron_secret = os.getenv("CRON_SECRET", "").strip()
     provided = request.args.get("token", "").strip() or request.headers.get("X-Cron-Token", "").strip()
 
@@ -301,11 +306,21 @@ def cron_check():
     if provided != cron_secret:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
 
-    try:
-        check_and_notify()
-        return jsonify({"success": True, "message": "Scheduled checks completed"})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+    with _cron_lock:
+        if _cron_running:
+            return jsonify({"success": True, "message": "A scheduled check is already running"})
+        _cron_running = True
+
+    def _run_check():
+        global _cron_running
+        try:
+            check_and_notify()
+        finally:
+            with _cron_lock:
+                _cron_running = False
+
+    threading.Thread(target=_run_check, daemon=True).start()
+    return jsonify({"success": True, "message": "Scheduled check started"}), 202
 
 
 # ==================== REPORTS ====================
