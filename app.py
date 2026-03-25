@@ -289,6 +289,25 @@ def manual_check():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/cron-check", methods=["GET", "POST"])
+def cron_check():
+    """Trigger checks from an external scheduler using a shared secret."""
+    cron_secret = os.getenv("CRON_SECRET", "").strip()
+    provided = request.args.get("token", "").strip() or request.headers.get("X-Cron-Token", "").strip()
+
+    if not cron_secret:
+        return jsonify({"success": False, "error": "CRON_SECRET is not configured"}), 503
+
+    if provided != cron_secret:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    try:
+        check_and_notify()
+        return jsonify({"success": True, "message": "Scheduled checks completed"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 # ==================== REPORTS ====================
 
 @app.route("/reports")
